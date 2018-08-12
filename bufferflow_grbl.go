@@ -398,9 +398,12 @@ func (b *BufferflowGrbl) IsBufferGloballySendingBackIncomingData() bool {
 //'?' is asynchronous to the normal buffer load and does not need to be paused when buffer full
 func (b *BufferflowGrbl) rptQueryLoop(p *serport) {
 	b.parent_serport = p //make note of this port for use in clearing the buffer later, on error.
-	ticker := time.NewTicker(250 * time.Millisecond)
 	b.quit = make(chan int)
 	go func() {
+		// wait five seconds for GRBL to but up before slamming it with status requests
+		duration := time.Duration(5)*time.Second
+		time.Sleep(duration)
+		ticker := time.NewTicker(500 * time.Millisecond)
 		for {
 			select {
 			case <-ticker.C:
