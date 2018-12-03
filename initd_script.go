@@ -79,7 +79,7 @@ esac
 		log.Printf("Command finished with error: %v", err4)
 	} else {
 		log.Printf("Successfully created your startup script in /etc/init.d")
-		log.Printf("You can now run /etc/init.id/serial-port-json-server start and this will run automatically on startup")
+		log.Printf("You can now run /etc/init.d/serial-port-json-server start and this will run automatically on startup")
 	}
 
 }
