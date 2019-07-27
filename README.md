@@ -1,6 +1,14 @@
 serial-port-json-server
 =======================
-Version 1.95
+Version 1.96
+
+Binaries for Download
+---------
+You can now always check the Releases page on Github for the latest binaries.
+https://github.com/chilipeppr/serial-port-json-server/releases
+
+Summary
+-------
 
 A serial port JSON websocket &amp; web server that runs from the command line on Windows, Mac, Linux, Raspberry Pi, or Beagle Bone that lets you communicate with your serial port from a web application. This enables web apps to be written that can communicate with your local serial device such as an Arduino, CNC controller, or any device that communicates over the serial port. Since version 1.82 you can now also program your Arduino by uploading a hex file.
 
@@ -77,11 +85,6 @@ Override the default hostname:
 Here's a screenshot of a successful run on Windows x64. Make sure you allow the firewall to give access to Serial Port JSON Server or you'll wonder why it's not working.
 <img src="http://chilipeppr.com/img/screenshots/serialportjsonserver_running.png">
 
-Binaries for Download
----------
-You can now always check the Releases page on Github for the latest binaries.
-https://github.com/chilipeppr/serial-port-json-server/releases
-
 Feed Rate Override
 ---------
 There is a new feature available as of version 1.83 which is Feed Rate Override. It can be triggered by sending in a command like the following:
@@ -98,9 +101,13 @@ To increase speed 2x
 
 `fro COM4 2`
 
+Binaries for Download
+---------
+https://github.com/chilipeppr/serial-port-json-server/releases
+
 How to Build
 ---------
-You do not need to build this. Binaries are available above. However, if you still want to build...
+You do not need to build this. Binaries are available in the releases section of this Github repo at https://github.com/chilipeppr/serial-port-json-server/releases. However, if you still want to build...
 
 Video tutorial of building SPJS on a Mac: https://www.youtube.com/watch?v=4Hou06bOuHc
 

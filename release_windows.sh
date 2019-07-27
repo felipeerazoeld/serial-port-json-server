@@ -2,9 +2,12 @@
 # You need to:
 # go get github.com/aktau/github-release
 # and that will add github-release to your go path command line
+echo "Installing github-release to commandline"
+echo "go get github.com/aktau/github-release"
 go get github.com/aktau/github-release
 
-export GITHUB_TOKEN=d1ce644ff5eef10f4f1e5fbf27515d22c7d68e8b
+# You need to create a personal github token and create an environment variable like below
+#export GITHUB_TOKEN=dd3b6cac1e0a426b33e2b0852df3ab85c25b2368
 
 export GITHUB_USER=chilipeppr
 
@@ -18,41 +21,45 @@ fi
 
 echo ""
 echo "Before creating release"
-bin/github-release info
+github-release info
 
-bin/github-release release \
+github-release release \
     --tag v$1 \
     --name "Serial Port JSON Server" \
     --description "A server for the Internet of Things. Lets you serve up serial ports to websockets so you can write front-end apps for your IoT devices in the browser." \
 
 echo ""
 echo "After creating release"
-bin/github-release info
+github-release info
 
 echo ""
 echo "Uploading binaries"
 
 # upload a file, for example the OSX/AMD64 binary of my gofinance app
-bin/github-release upload \
+github-release upload \
     --tag v$1 \
     --name "serial-port-json-server-$1_linux_amd64.tar.gz" \
     --file snapshot/serial-port-json-server-$1_linux_amd64.tar.gz
-bin/github-release upload \
+github-release upload \
     --tag v$1 \
     --name "serial-port-json-server-$1_linux_386.tar.gz" \
     --file snapshot/serial-port-json-server-$1_linux_386.tar.gz
-bin/github-release upload \
+github-release upload \
     --tag v$1 \
     --name "serial-port-json-server-$1_linux_arm.tar.gz" \
     --file snapshot/serial-port-json-server-$1_linux_arm.tar.gz
-bin/github-release upload \
+github-release upload \
     --tag v$1 \
     --name "serial-port-json-server-$1_windows_386.zip" \
     --file snapshot/serial-port-json-server-$1_windows_386.zip
-bin/github-release upload \
+github-release upload \
     --tag v$1 \
     --name "serial-port-json-server-$1_windows_amd64.zip" \
     --file snapshot/serial-port-json-server-$1_windows_amd64.zip
+github-release upload \
+    --tag v$1 \
+    --name "serial-port-json-server-$1_darwin_amd64.zip" \
+    --file snapshot/serial-port-json-server-$1_darwin_amd64.zip
     
 echo ""
 echo "Done"

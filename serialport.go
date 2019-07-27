@@ -5,13 +5,16 @@ import (
 	"encoding/json"
 	"sync"
 
-	"github.com/johnlauer/goserial"
-	//"github.com/facchinm/go-serial"
+	// serial "github.com/johnlauer/goserial"
+	// "github.com/facchinm/go-serial"
 	"io"
 	"log"
 	"strconv"
 	"strings"
 	"time"
+
+	serial "go.bug.st/serial.v1"
+	// "github.com/bugst/go-serial"
 )
 
 type SerialConfig struct {
@@ -36,9 +39,9 @@ type serport struct {
 	// The serial port connection.
 
 	// Needed for original serial library
-	portConf *serial.Config
+	// portConf *serial.Config
 	// Needed for Arduino serial library
-	//portConf *SerialConfig
+	portConf *SerialConfig
 
 	portIo io.ReadWriteCloser
 
@@ -46,7 +49,8 @@ type serport struct {
 
 	// Keep track of whether we're being actively closed
 	// just so we don't show scary error messages
-	isClosing bool
+	isClosing           bool
+	isClosingDueToError bool
 
 	// counter incremented on queue, decremented on write
 	itemsInBuffer int
@@ -194,6 +198,7 @@ func (p *serport) reader() {
 				h.broadcastSys <- []byte("Error reading on " + p.portConf.Name + " " +
 					err.Error() + " Closing port.")
 				h.broadcastSys <- []byte("{\"Cmd\":\"OpenFail\",\"Desc\":\"Got error reading on port. " + err.Error() + "\",\"Port\":\"" + p.portConf.Name + "\",\"Baud\":" + strconv.Itoa(p.portConf.Baud) + "}")
+				p.isClosingDueToError = true
 				break
 			}
 
@@ -203,13 +208,17 @@ func (p *serport) reader() {
 			if err == nil {
 				diff := time.Since(timeCheckOpen)
 				if diff.Nanoseconds() < 1000000 {
-					p.isClosing = true
+					// p.isClosing = true
+					p.isClosingDueToError = true
 				}
 				timeCheckOpen = time.Now()
 			}
 		}
 	}
-	p.portIo.Close()
+	if p.isClosingDueToError {
+		spCloseReal(p)
+	}
+	// p.portIo.Close()
 }
 
 // this method runs as its own thread because it's instantiated
@@ -362,7 +371,11 @@ func (p *serport) writerNoBuf() {
 	msgstr := "Shutting down writer on " + p.portConf.Name
 	log.Println(msgstr)
 	h.broadcastSys <- []byte(msgstr)
-	p.portIo.Close()
+	err := p.portIo.Close()
+	if err != nil {
+		errstr := "Error closing port at operating system level. Maybe USB cable got pulled? " + p.portConf.Name + " " + err.Error()
+		log.Print(errstr)
+	}
 }
 
 var spmutex = &sync.Mutex{}
@@ -402,34 +415,34 @@ func spHandlerOpen(portname string, baud int, buftype string, isSecondary bool) 
 	//p, err := options.Open(portname)
 
 	// Needed for original serial library
-	conf := &serial.Config{}
-	conf.Baud = baud
-	conf.Name = portname
-	conf.RtsOn = true
-	conf.DtrOn = false
-
-	// Needed for Arduino serial library
 	/*
-		conf := &SerialConfig{Name: portname, Baud: baud, RtsOn: true}
+		conf := &serial.Config{}
+		conf.Baud = baud
+		conf.Name = portname
+		conf.RtsOn = true
 		conf.DtrOn = false
 	*/
 
-	/*
-		// Needed for Arduino serial library
-		mode := &serial.Mode{
-			BaudRate: baud,
-			Vmin:     0,
-			Vtimeout: 10,
-		}
-	*/
+	// Needed for Arduino serial library
+	conf := &SerialConfig{Name: portname, Baud: baud, RtsOn: true}
+	conf.DtrOn = false
+
+	// Needed for Arduino serial library
+	mode := &serial.Mode{
+		BaudRate: baud,
+		// Vmin:     0,
+		// Vtimeout: 10,
+	}
+
 	//mode.DataBits = 7
 	//mode.Parity = 0
 	//mode.StopBits = 1
 
 	// Needed for original serial library
-	sp, err := serial.OpenPort(conf)
+	// sp, err := serial.OpenPort(conf)
 	// Needed for Arduino serial library
-	//sp, err := serial.OpenPort(portname, mode)
+	sp, err := serial.Open(portname, mode)
+	// sp, err := serial.OpenPort(portname, mode)
 
 	log.Print("Just tried to open port")
 	if err != nil {
@@ -437,7 +450,8 @@ func spHandlerOpen(portname string, baud int, buftype string, isSecondary bool) 
 		log.Print("Error opening port " + err.Error())
 		//h.broadcastSys <- []byte("Error opening port. " + err.Error())
 		h.broadcastSys <- []byte("{\"Cmd\":\"OpenFail\",\"Desc\":\"Error opening port. " + err.Error() + "\",\"Port\":\"" + conf.Name + "\",\"Baud\":" + strconv.Itoa(conf.Baud) + "}")
-
+		spIsOpening = false
+		spmutex.Unlock()
 		return
 	}
 	log.Print("Opened port successfully")
@@ -576,6 +590,7 @@ func spHandlerCloseExperimental(p *serport) {
 
 func spHandlerClose(p *serport) {
 	p.isClosing = true
+
 	//close the port
 	//elicit response from hardware to close out p.reader()
 	_, _ = p.portIo.Write([]byte("?"))
@@ -587,4 +602,11 @@ func spHandlerClose(p *serport) {
 	// we opened. the only thing holding up that thread is the p.reader()
 	// so if we close the reader we should get an exit
 	h.broadcastSys <- []byte("Closing serial port " + p.portConf.Name)
+}
+
+func spCloseReal(p *serport) {
+	p.bufferwatcher.Close()
+	p.portIo.Close()
+	// spListDual(false)
+	spList()
 }

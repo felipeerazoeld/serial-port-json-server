@@ -22,15 +22,15 @@ import (
 )
 
 var (
-	version      = "1.95"
-	versionFloat = float32(1.95)
+	version      = "1.96"
+	versionFloat = float32(1.96)
 	addr         = flag.String("addr", ":8989", "http service address. example :8800 to run on port 8800, example 10.0.0.2:9000 to run on specific IP address and port, example 10.0.0.2 to run on specific IP address")
 	//	addr  = flag.String("addr", ":8980", "http service address. example :8800 to run on port 8800, example 10.0.0.2:9000 to run on specific IP address and port, example 10.0.0.2 to run on specific IP address")
 	saddr = flag.String("saddr", ":8990", "https service address. example :8801 to run https on port 8801")
 	scert = flag.String("scert", "cert.pem", "https certificate file")
 	skey  = flag.String("skey", "key.pem", "https key file")
 	//assets       = flag.String("assets", defaultAssetPath(), "path to assets")
-	//	verbose = flag.Bool("v", true, "show debug logging")
+		// verbose = flag.Bool("v", true, "show debug logging")
 	verbose = flag.Bool("v", false, "show debug logging")
 	//homeTempl *template.Template
 	isLaunchSelf = flag.Bool("ls", false, "Launch self 5 seconds later. This flag is used when you ask for a restart from a websocket client.")
